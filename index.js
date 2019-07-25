@@ -1,10 +1,20 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
+
 const app = express();
 
-/* Takes JSON data of a request, transforms to object, then attaches to body property of
- * request object before route handler is called. */
+/* Takes JSON data of a request, transforms to a javascript object, 
+ * then attaches to body property of request object before route handler is called. */
 app.use(bodyParser.json());
+
+// Define a custom token which shows data sent in POST requests
+morgan.token('body', (request, response) => {
+  return JSON.stringify(request.body);
+});
+
+// Use custom string format for morgan middleware
+app.use(morgan(':method :url :status - :response-time[3] ms :body'))
 
 let persons = [
   {
@@ -33,6 +43,10 @@ const generateId = () => {
   return Math.floor(Math.random() * Math.floor(500000));
 }
 
+const personExists = (name) => {
+  return persons.some(person => (person.name.toLowerCase() === name.toLowerCase()))
+}
+
 app.get('/api/persons', (request, response) => {
   // Send persons array as json object
   response.json(persons);
@@ -58,10 +72,9 @@ app.get('/info', (request, response) => {
 });
 
 app.post('/api/persons/', (request, response) => {
-  console.log(request.body);
   const body = request.body;
   
-  if (!body.name || !body.number) {
+  if (!body.name || !body.number || personExists(body.name)) {
     return response.status(400).json({
       error: 'content missing'
     });
