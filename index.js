@@ -1,12 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const cors = require('cors');
 
 const app = express();
 
 /* Takes JSON data of a request, transforms to a javascript object, 
  * then attaches to body property of request object before route handler is called. */
 app.use(bodyParser.json());
+
+/*
+// Allow for cross origin resource sharing; requests may come from all origins
+app.use(cors());
+*/
 
 // Define a custom token which shows data sent in POST requests
 morgan.token('body', (request, response) => {
@@ -98,7 +104,7 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end();
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 });
